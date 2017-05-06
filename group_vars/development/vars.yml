@@ -1,0 +1,18 @@
+# STS role and target account
+sts_role_arn: arn:aws:iam::543279062384:role/admin
+
+# Stack inputs
+# Microtrader settings
+config_microtrader_quote_http_port: 8000
+config_microtrader_audit_http_port: 8001
+config_microtrader_dashboard_http_port: 8002
+
+# Database settings
+config_database_name: audit
+config_database_username: audit
+config_database_password: super-secret-password
+
+# Application settings
+config_application_dns_name: dev-microtrader
+config_application_image_id: ami-b4ce76d4
+config_application_key_name: docker-production-aws

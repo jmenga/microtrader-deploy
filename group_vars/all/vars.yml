@@ -1,0 +1,5 @@
+---
+# Add global settings here
+
+# aws-cloudformation role settings
+cf_stack_name: "microtrader-{{ env }}"
