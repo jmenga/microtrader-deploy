@@ -16,3 +16,6 @@ config_database_password: super-secret-password
 config_application_dns_name: dev-microtrader
 config_application_image_id: ami-b4ce76d4
 config_application_key_name: docker-production-aws
+
+# ECS task runner settings
+config_ecs_task_runner_version: gMOxmiwMdonpZDdMHGqlq_b0hEXjPHzg
