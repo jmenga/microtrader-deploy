@@ -91,6 +91,82 @@ Conditions:
       - 1
 
 Resources:
+  DatabaseSecret:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken:
+        Fn::Sub: ${SecretsProvisioner.Arn}
+      Name:
+        Fn::Sub: /${AWS::StackName}/database/password
+      Key: JDBC_PASSWORD
+      KmsKeyId:
+        Fn::ImportValue: CfnMasterKey
+  SecretsProvisionerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action:
+            - sts:AssumeRole
+      Policies:
+        - PolicyName: SecretsProvisionerPermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - Sid: Encrypt
+              Effect: Allow
+              Action:
+              - kms:Decrypt
+              - kms:Encrypt
+              Resource:
+                Fn::ImportValue: CfnMasterKeyArn
+            - Sid: ProvisionSecrets
+              Effect: Allow
+              Action:
+              - ssm:PutParameter
+              - ssm:DeleteParameter
+              Resource:
+                Fn::Sub: arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/*
+            - Sid: ManageLambdaLogs
+              Effect: Allow
+              Action:
+              - logs:CreateLogStream
+              - logs:DescribeLogStreams
+              - logs:PutLogEvents
+              Resource:
+                Fn::Sub: ${SecretsProvisionerLogGroup.Arn}
+  SecretsProvisioner:
+    Type: AWS::Lambda::Function
+    DependsOn:
+      - SecretsProvisionerLogGroup
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-secretsProvisioner
+      Description:
+        Fn::Sub: ${AWS::StackName} Secrets Provisioner
+      Handler: secrets_provisioner.handler
+      MemorySize: 128
+      Runtime: python2.7
+      Timeout: 300
+      Code:
+        S3Bucket:
+          Fn::Sub: ${AWS::AccountId}-cfn-lambda
+        S3Key: secretsProvisioner.zip
+        S3ObjectVersion: j9UK1bzcKP8ev383MkYMowfsFSYsmER0
+      Role:
+        Fn::Sub: ${SecretsProvisionerRole.Arn}
+  SecretsProvisionerLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: {{ log_deletion_policy }}
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/lambda/${AWS::StackName}-secretsProvisioner
+      RetentionInDays:
+        Ref: LogRetention
   EcsTaskRunnerRole:
     Type: AWS::IAM::Role
     Properties:
