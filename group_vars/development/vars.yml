@@ -10,11 +10,10 @@ config_microtrader_dashboard_http_port: 8002
 # Database settings
 config_database_name: audit
 config_database_username: audit
-config_database_password: super-secret-password
 
 # Application settings
 config_application_dns_name: dev-microtrader
-config_application_image_id: ami-b4ce76d4
+config_application_image_id: ami-089b8d71
 config_application_key_name: docker-production-aws
 
 # ECS task runner settings
