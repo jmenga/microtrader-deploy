@@ -10,6 +10,7 @@ config_microtrader_dashboard_http_port: 8002
 # Database settings
 config_database_name: audit
 config_database_username: audit
+config_database_password: AQECAHi+H8CCveyMphd5OgXcx8kjaBcYpSr5/ZICg4CeeZvrNQAAAGowaAYJKoZIhvcNAQcGoFswWQIBADBUBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDJ9tjiyk/b5N5soYQgIBEIAnCveDNo+BoRjCTt++P1FU5YEFARrUCk/8xc6Zj5dn1sA0RAj/T117
 
 # Application settings
 config_application_dns_name: dev-microtrader

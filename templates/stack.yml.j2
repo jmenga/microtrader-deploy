@@ -35,6 +35,10 @@ Parameters:
       - db.t2.micro
       - db.t2.small
       - db.t2.medium
+  DatabasePassword:
+    Type: String
+    Description: Database password
+    NoEcho: true
   DatabaseUsername:
     Type: String
     Description: Database username
@@ -95,6 +99,8 @@ Resources:
       Name:
         Fn::Sub: /${AWS::StackName}/database/password
       Key: JDBC_PASSWORD
+      Value:
+        Ref: DatabasePassword
       KmsKeyId:
         Fn::ImportValue: CfnMasterKey
   ClusterSecret:
@@ -103,7 +109,7 @@ Resources:
       ServiceToken:
         Fn::Sub: ${SecretsProvisioner.Arn}
       Name:
-        Fn::Sub: /${AWS::StackName}/cluster/secret
+        Fn::Sub: /${AWS::StackName}/cluster/password
       Key: CLUSTER_GROUP_PASSWORD
       KmsKeyId:
         Fn::ImportValue: CfnMasterKey
@@ -162,7 +168,7 @@ Resources:
         S3Bucket:
           Fn::Sub: ${AWS::AccountId}-cfn-lambda
         S3Key: secretsProvisioner.zip
-        S3ObjectVersion: aASY2Rtk36NcfK7bfKH8gxDsuHCuLDst
+        S3ObjectVersion: 6HBs_wMCFOLrN6kI2cltzriuztRHXK1N
       Role:
         Fn::Sub: ${SecretsProvisionerRole.Arn}
   SecretsProvisionerLogGroup:
@@ -261,9 +267,38 @@ Resources:
       TaskDefinition:
         Ref: MigrateTaskDefinition
       RunOnUpdate: "true"
+  MigrateTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: SSMSecrets
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                - ssm:GetParameters
+                Resource:
+                  - Fn::Sub: arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/database/password
+              - Effect: Allow
+                Action:
+                - kms:Decrypt
+                Resource:
+                  Fn::ImportValue: CfnMasterKeyArn
   MigrateTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
+      TaskRoleArn:
+        Fn::Sub: ${MigrateTaskRole.Arn}
       NetworkMode: host
       ContainerDefinitions:
         - Name: migrate
@@ -451,10 +486,10 @@ Resources:
           Environment:
             - Name: SSM_SECRETS
               Value:
-                Fn::Sub: /${AWS::StackName}/database/password /${AWS::StackName}/cluster/secret
+                Fn::Sub: /${AWS::StackName}/database/password /${AWS::StackName}/cluster/password
             - Name: SSM_VERSIONS
               Value:
-                Fn::Sub: ${DatabaseSecret.Version} ${ClusterSecret.Version}
+                Fn::Sub: ${DatabaseSecret} ${ClusterSecret}
             - Name: HTTPS_PROXY
               Value:
                 Fn::ImportValue:
@@ -539,10 +574,10 @@ Resources:
           Environment:
             - Name: SSM_SECRETS
               Value:
-                Fn::Sub: /${AWS::StackName}/cluster/secret
+                Fn::Sub: /${AWS::StackName}/cluster/password
             - Name: SSM_VERSIONS
               Value:
-                Fn::Sub: ${ClusterSecret.Version}
+                Fn::Sub: ${ClusterSecret}
             - Name: HTTPS_PROXY
               Value:
                 Fn::ImportValue:
@@ -608,10 +643,10 @@ Resources:
           Environment:
             - Name: SSM_SECRETS
               Value:
-                Fn::Sub: /${AWS::StackName}/cluster/secret
+                Fn::Sub: /${AWS::StackName}/cluster/password
             - Name: SSM_VERSIONS
               Value:
-                Fn::Sub: ${ClusterSecret.Version}
+                Fn::Sub: ${ClusterSecret}
             - Name: HTTPS_PROXY
               Value:
                 Fn::ImportValue:
@@ -702,10 +737,10 @@ Resources:
           Environment:
             - Name: SSM_SECRETS
               Value:
-                Fn::Sub: /${AWS::StackName}/cluster/secret
+                Fn::Sub: /${AWS::StackName}/cluster/password
             - Name: SSM_VERSIONS
               Value:
-                Fn::Sub: ${ClusterSecret.Version}
+                Fn::Sub: ${ClusterSecret}
             - Name: HTTPS_PROXY
               Value:
                 Fn::ImportValue:
