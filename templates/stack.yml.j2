@@ -139,8 +139,11 @@ Resources:
             - Sid: ProvisionSecrets
               Effect: Allow
               Action:
+              - ssm:GetParameters
               - ssm:PutParameter
               - ssm:DeleteParameter
+              - ssm:AddTagsToResource
+              - ssm:ListTagsForResource
               Resource:
                 Fn::Sub: arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/*
             - Sid: ManageLambdaLogs
