@@ -911,12 +911,26 @@ Resources:
         - Key: Name
           Value: 
             Fn::Sub: ${AWS::StackName}-ApplicationDatabaseSubnetGroup
+  ApplicationDatabaseParameterGroup:
+    Type: "AWS::RDS::DBParameterGroup"
+    Properties:
+      Description:
+        Fn::Sub: ${AWS::StackName} Database Parameter Group
+      Family: MySQL5.7
+      Parameters:
+        event_scheduler: "OFF"
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub: ${AWS::StackName}-DBParameterGroup
   ApplicationDatabase:
     Type: AWS::RDS::DBInstance
     DeletionPolicy: {{ config_database_deletion_policy | default('Delete') }}
     Properties:
       Engine: MySQL
       EngineVersion: 5.7
+      DBParameterGroupName:
+        Ref: ApplicationDatabaseParameterGroup
       DBInstanceClass:
         Ref: DatabaseInstanceType
       AllocatedStorage: 10
