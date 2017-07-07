@@ -113,6 +113,7 @@ Resources:
       Key: CLUSTER_GROUP_PASSWORD
       KmsKeyId:
         Fn::ImportValue: CfnMasterKey
+      Trigger: 1
   SecretsProvisionerRole:
     Type: AWS::IAM::Role
     Properties:
