@@ -16,7 +16,6 @@ config_database_password: AQECAHi+H8CCveyMphd5OgXcx8kjaBcYpSr5/ZICg4CeeZvrNQAAAG
 config_application_dns_name: dev-microtrader
 config_application_image_id: ami-089b8d71
 config_application_key_name: docker-production-aws
-config_application_desired_count: 2
 
 # ECS task runner settings
 config_ecs_task_runner_version: gMOxmiwMdonpZDdMHGqlq_b0hEXjPHzg
