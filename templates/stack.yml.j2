@@ -91,6 +91,23 @@ Conditions:
       - 1
 
 Resources:
+  LifecycleHookSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint:
+        Fn::Sub: ${LifecycleHookFunction.Arn}
+      Protocol: lambda
+      TopicArn:
+        Ref: LifecycleHookTopic
+  LifecycleHookPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: LifecycleHookFunction
+      Principal: sns.amazonaws.com
+      SourceArn:
+        Ref: LifecycleHookTopic
   LifecycleFunctionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -107,6 +124,12 @@ Resources:
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
+              - Sid: Publish
+                Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource:
+                  Ref: LifecycleHookTopic
               - Sid: CompleteLifecycleAction
                 Effect: Allow
                 Action:
@@ -129,12 +152,6 @@ Resources:
                   ArnEquals:
                     ecs:cluster:
                       Fn::Sub: arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${ApplicationCluster}
-              - Sid: Publish
-                Effect: Allow
-                Action:
-                  - sns:Publish
-                Resource:
-                  Ref: LifecycleHookTopic
               - Sid: ManageLambdaLogs
                 Effect: Allow
                 Action:
@@ -142,19 +159,39 @@ Resources:
                 - logs:PutLogEvents
                 Resource:
                   Fn::Sub: ${LifecycleHookFunctionLogGroup.Arn}
+  LifecycleHookFunction:
+    Type: AWS::Lambda::Function
+    DependsOn:
+      - LifecycleHookFunctionLogGroup
+    Properties:
+      Role:
+        Fn::Sub: ${LifecycleFunctionRole.Arn}
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-lifecycleHooks
+      Description:
+        Fn::Sub: ${AWS::StackName} Autoscaling Lifecycle Hook
+      Code:
+        S3Bucket:
+          Fn::ImportValue: CfnLambdaBucket
+        S3Key: lifecycleHooks.zip
+      Runtime: python2.7
+      MemorySize: 128
+      Timeout: 30
+      Handler: lifecycle_hooks.handler
+      Environment:
+        Variables:
+          ECS_CLUSTER:
+            Ref: ApplicationCluster
+  LifecycleHookFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: {{ log_deletion_policy }}
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/lambda/${AWS::StackName}-lifecycleHooks
+      RetentionInDays: 30
   LifecycleHookTopic:
     Type: AWS::SNS::Topic
-    Properties:
-      TopicName:
-        Fn::Sub: ${AWS::StackName}-lifecycle-hook-topic
-  LifecycleHookSubscription:
-    Type: AWS::SNS::Subscription
-    Properties:
-      Endpoint:
-        Fn::Sub: ${LifecycleHookFunction.Arn}
-      Protocol: lambda
-      TopicArn:
-        Ref: LifecycleHookTopic
+    Properties: {}
   LifecycleHookRole:
     Type: AWS::IAM::Role
     Properties:
@@ -180,54 +217,14 @@ Resources:
   LifecycleHook:
     Type: AWS::AutoScaling::LifecycleHook
     Properties:
+      RoleARN:
+        Fn::Sub: ${LifecycleHookRole.Arn}
       AutoScalingGroupName:
         Ref: ApplicationAutoscaling
       DefaultResult: CONTINUE
-      HeartbeatTimeout: 600
+      HeartbeatTimeout: 900
       LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
       NotificationTargetARN:
-        Ref: LifecycleHookTopic
-      RoleARN:
-        Fn::Sub: ${LifecycleHookRole.Arn}
-  LifecycleHookFunctionLogGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
-    Properties:
-      LogGroupName:
-        Fn::Sub: /aws/lambda/${AWS::StackName}-lifecycleHooks
-      RetentionInDays: 30
-  LifecycleHookFunction:
-    Type: AWS::Lambda::Function
-    DependsOn:
-      - LifecycleHookFunctionLogGroup
-    Properties:
-      FunctionName:
-        Fn::Sub: ${AWS::StackName}-lifecycleHooks
-      Description:
-        Fn::Sub: ${AWS::StackName} Autoscaling Lifecycle Hook
-      Code:
-        S3Bucket:
-          Fn::ImportValue: CfnLambdaBucket
-        S3Key: lifecycleHooks.zip
-        S3ObjectVersion: 7ljvSQyGHzclxwmxuXqIW9_qV9uhKM73
-      Runtime: python2.7
-      MemorySize: 128
-      Timeout: 300
-      Handler: lifecycle_hooks.handler
-      Environment:
-        Variables:
-          ECS_CLUSTER:
-            Ref: ApplicationCluster
-      Role:
-        Fn::Sub: ${LifecycleFunctionRole.Arn}
-  LifecycleHookPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName:
-        Ref: LifecycleHookFunction
-      Principal: sns.amazonaws.com
-      SourceArn:
         Ref: LifecycleHookTopic
   DatabaseSecret:
     Type: AWS::CloudFormation::CustomResource
@@ -1479,18 +1476,18 @@ Resources:
       - DockerLogGroup
       - EcsInitLogGroup
       - EcsAgentLogGroup
-    CreationPolicy:
-      ResourceSignal:
-        Count:
-          Ref: ApplicationDesiredCount
-        Timeout: PT15M
     UpdatePolicy:
       AutoScalingRollingUpdate:
         MinInstancesInService:
           Ref: ApplicationDesiredCount
         MinSuccessfulInstancesPercent: 100
         WaitOnResourceSignals: "true"
-        PauseTime: PT15M
+        PauseTime: PT15M 
+    CreationPolicy:
+      ResourceSignal:
+        Count:
+          Ref: ApplicationDesiredCount
+        Timeout: PT15M
     Properties:
       LaunchConfigurationName:
         Ref: ApplicationAutoscalingLaunchConfiguration
