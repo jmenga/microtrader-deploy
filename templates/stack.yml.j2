@@ -91,6 +91,111 @@ Conditions:
       - 1
 
 Resources:
+  AuditServiceAutoscalingScaleOutPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: ScaleOut
+      PolicyType: StepScaling
+      ScalingTargetId:
+        Ref: AuditServiceAutoscalingTarget
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 360
+        MetricAggregationType: Average
+        StepAdjustments:
+        - ScalingAdjustment: 1
+          MetricIntervalLowerBound: 0
+  AuditServiceAutoscalingScaleInPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: ScaleIn
+      PolicyType: StepScaling
+      ScalingTargetId:
+        Ref: AuditServiceAutoscalingTarget
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 360
+        MetricAggregationType: Average
+        StepAdjustments:
+        - ScalingAdjustment: -1
+          MetricIntervalUpperBound: 0
+  AuditServiceAutoscalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: application-autoscaling.amazonaws.com
+      Policies:
+        - PolicyName: AutoscalingPermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                - application-autoscaling:DescribeScalableTargets
+                - application-autoscaling:DescribeScalingActivities
+                - application-autoscaling:DescribeScalingPolicies
+                - cloudwatch:DescribeAlarms
+                - cloudwatch:PutMetricAlarm
+                - ecs:DescribeServices
+                - ecs:UpdateService
+                Resource: "*"
+  AuditServiceAutoscalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      ServiceNamespace: ecs
+      ResourceId:
+        Fn::Sub: service/${ApplicationCluster}/${AuditService.Name}
+      ScalableDimension: ecs:service:DesiredCount
+      MinCapacity: 1
+      MaxCapacity: 4
+      RoleARN:
+        Fn::Sub: ${AuditServiceAutoscalingRole.Arn}
+  AuditServiceHighCpuAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - Ref: AuditServiceAutoscalingScaleOutPolicy
+      AlarmDescription: Audit Service High CPU
+      Namespace: AWS/ECS
+      Dimensions:
+        - Name: ClusterName
+          Value:
+            Ref: ApplicationCluster
+        - Name: ServiceName
+          Value:
+            Fn::Sub: ${AuditService.Name}
+      MetricName: CPUUtilization
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 3
+      Threshold: 50
+      ComparisonOperator: GreaterThanThreshold
+  AuditServiceLowCpuAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - Ref: AuditServiceAutoscalingScaleInPolicy
+      AlarmDescription: Audit Service Low CPU 
+      Namespace: AWS/ECS
+      Dimensions:
+        - Name: ClusterName
+          Value:
+            Ref: ApplicationCluster
+        - Name: ServiceName
+          Value:
+            Fn::Sub: ${AuditService.Name}
+      MetricName: CPUUtilization
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 3
+      Threshold: 25
+      ComparisonOperator: LessThanThreshold
   ApplicationAutoscalingScaleOutPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
@@ -1031,6 +1136,8 @@ Resources:
                 Ref: AWS::Region
               awslogs-stream-prefix: docker
           Environment:
+            - Name: MARKET_PERIOD
+              Value: 3000
             - Name: SSM_SECRETS
               Value:
                 Fn::Sub: /${AWS::StackName}/cluster/password
