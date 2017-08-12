@@ -1,0 +1,14 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - ansible-galaxy install -r roles/requirements.yml --force
+  build:
+    commands:
+      - ansible-playbook site.yml -e env=development -e sts_disable=true -e cf_build_folder=build --tags generate
+      - ansible-playbook site.yml -e env=production -e sts_disable=true -e cf_build_folder=build --tags generate
+
+artifacts:
+  files:
+    - build/*
