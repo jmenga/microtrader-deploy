@@ -786,11 +786,7 @@ Resources:
         Ref: ApplicationDesiredCount
       DeploymentConfiguration:
         MaximumPercent: 200
-        MinimumHealthyPercent:
-          Fn::If:
-            - ApplicationSingleInstanceCondition
-            - 0
-            - 50
+        MinimumHealthyPercent: 100
   PortfolioService:
     Type: AWS::ECS::Service
     DependsOn:
@@ -825,11 +821,7 @@ Resources:
         Ref: EcsServiceRole
       DeploymentConfiguration:
         MaximumPercent: 200
-        MinimumHealthyPercent:
-          Fn::If:
-            - ApplicationSingleInstanceCondition
-            - 0
-            - 50
+        MinimumHealthyPercent: 100
       TaskDefinition:
         Ref: AuditTaskDefinition
       Cluster:
