@@ -18,5 +18,5 @@ Stack.Inputs.DatabasePassword: AQICAHj7MfbzqIkL206zxHO2BIK6vbdMxzXI2rdyeYLA/j3lI
 
 # Application settings
 Stack.Inputs.ApplicationDnsName: dev-microtrader
-Stack.Inputs.ApplicationImageId: ami-089b8d71
+Stack.Inputs.ApplicationImageId: ami-17ad6d6f
 Stack.Inputs.ApplicationKeyName: docker-production-aws
