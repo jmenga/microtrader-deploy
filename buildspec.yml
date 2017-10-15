@@ -3,11 +3,11 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - ansible-galaxy install -r roles/requirements.yml --force
+      - make roles
   build:
     commands:
-      - ansible-playbook site.yml -e env=development -e sts_disable=true -e cf_build_folder=build --tags generate
-      - ansible-playbook site.yml -e env=production -e sts_disable=true -e cf_build_folder=build --tags generate
+      - make generate/development /codebuild
+      - make generate/production /codebuild
 
 artifacts:
   files:
