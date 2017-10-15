@@ -1,21 +1,23 @@
 # STS role and target account
-sts_role_arn: arn:aws:iam::543279062384:role/admin
+Sts.Role: arn:aws:iam::543279062384:role/admin
 
-# Stack inputs
+# Stack settings
+Stack.Name: microtrader-production
+Stack.Description: Microtrader Stack - Production
+Stack.Tags: 
+  org:tech:environment: production
+
 # Microtrader settings
-config_microtrader_quote_http_port: 8000
-config_microtrader_audit_http_port: 8001
-config_microtrader_dashboard_http_port: 8002
+Stack.Inputs.MicrotraderQuoteHttpPort: 8000
+Stack.Inputs.MicrotraderAuditHttpPort: 8001
+Stack.Inputs.MicrotraderDashboardHttpPort: 8002
 
 # Database settings
-config_database_name: audit
-config_database_username: audit
-config_database_password: AQECAHi+H8CCveyMphd5OgXcx8kjaBcYpSr5/ZICg4CeeZvrNQAAAGowaAYJKoZIhvcNAQcGoFswWQIBADBUBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDJ9tjiyk/b5N5soYQgIBEIAnCveDNo+BoRjCTt++P1FU5YEFARrUCk/8xc6Zj5dn1sA0RAj/T117
+Stack.Inputs.DatabaseName: audit
+Stack.Inputs.DatabaseUsername: audit
+Stack.Inputs.DatabasePassword: AQICAHj7MfbzqIkL206zxHO2BIK6vbdMxzXI2rdyeYLA/j3lIwHli2UsC3HNYrfQlmOr6RHTAAAAcTBvBgkqhkiG9w0BBwagYjBgAgEAMFsGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMi9kQsPPgQJpCcwS/AgEQgC5y94YbJTJxuKuHxjyQOjjCbJfgcQi1Mj2g/p8MbrZH74IdXkbcsEI6ccIby4uV
 
 # Application settings
-config_application_dns_name: prod-microtrader
-config_application_image_id: ami-089b8d71
-config_application_key_name: docker-production-aws
-
-# ECS task runner settings
-config_ecs_task_runner_version: gMOxmiwMdonpZDdMHGqlq_b0hEXjPHzg
+Stack.Inputs.ApplicationDnsName: prod-microtrader
+Stack.Inputs.ApplicationImageId: ami-089b8d71
+Stack.Inputs.ApplicationKeyName: docker-production-aws

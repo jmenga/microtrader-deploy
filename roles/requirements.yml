@@ -5,5 +5,5 @@
   name: aws-cloudformation
 - src: https://github.com/docker-production-aws/aws-sts.git
   scm: git
-  version: master
+  version: dot_notation
   name: aws-sts

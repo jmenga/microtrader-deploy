@@ -1,8 +1,9 @@
 # STS role and target account
-sts_role_arn: arn:aws:iam::543279062384:role/admin
+Sts.Role: arn:aws:iam::543279062384:role/admin
 
 # Stack settings
 Stack.Name: microtrader-development
+Stack.Description: Microtrader Stack - Development
 Stack.Tags: 
   org:tech:environment: development
 
@@ -14,12 +15,9 @@ Stack.Inputs.MicrotraderDashboardHttpPort: 8002
 # Database settings
 Stack.Inputs.DatabaseName: audit
 Stack.Inputs.DatabaseUsername: audit
-Stack.Inputs.DatabasePassword: AQECAHi+H8CCveyMphd5OgXcx8kjaBcYpSr5/ZICg4CeeZvrNQAAAGowaAYJKoZIhvcNAQcGoFswWQIBADBUBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDJ9tjiyk/b5N5soYQgIBEIAnCveDNo+BoRjCTt++P1FU5YEFARrUCk/8xc6Zj5dn1sA0RAj/T117
+Stack.Inputs.DatabasePassword: AQICAHj7MfbzqIkL206zxHO2BIK6vbdMxzXI2rdyeYLA/j3lIwFh+oHMbittD6IiS99881LwAAAAcTBvBgkqhkiG9w0BBwagYjBgAgEAMFsGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMSKLkM8Q/RqqbULY8AgEQgC5tUmVFnhrpOdGm7tPgBgFMdKbhmzAq8gc5HukUSB9Q+gYPPQHO7ufULGeKA1i9
 
 # Application settings
 Stack.Inputs.ApplicationDnsName: dev-microtrader
 Stack.Inputs.ApplicationImageId: ami-089b8d71
 Stack.Inputs.ApplicationKeyName: docker-production-aws
-
-# ECS task runner settings
-Stack.Inputs.EcsTaskRunnerVersion: gMOxmiwMdonpZDdMHGqlq_b0hEXjPHzg

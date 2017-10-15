@@ -1,12 +1,12 @@
-{% set log_deletion_policy = config_log_deletion_policy | default('Delete') %}
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Microtrader Stack - {{ env }}
+Description: Microtrader Stack
 
 Parameters:
   EcsTaskRunnerVersion:
     Type: String
     Description: S3 Object Version of CloudFormation ECS Tasks function
+    Default: LATEST    
   MicrotraderImage:
     Type: String
     Description: Microtrader Docker Image Registry/Organization Base URI
@@ -89,6 +89,10 @@ Conditions:
     Fn::Equals:
       - Ref: ApplicationDesiredCount
       - 1
+  EcsTaskRunnerLatestVersionCondition:
+    Fn::Equals:
+      - Ref: EcsTaskRunnerVersion
+      - LATEST
 
 Resources:
   AuditServiceAutoscalingScaleInPolicy:
@@ -347,7 +351,7 @@ Resources:
             Fn::Sub: ${MicrotraderQuoteHttpPort},${MicrotraderAuditHttpPort},${MicrotraderDashboardHttpPort},15701,15702,15703,15704
   EcsCapacityLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: /aws/lambda/${AWS::StackName}-ecsCapacity
@@ -446,7 +450,7 @@ Resources:
             Ref: ApplicationCluster
   LifecycleHookFunctionLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: /aws/lambda/${AWS::StackName}-lifecycleHooks
@@ -569,12 +573,11 @@ Resources:
         S3Bucket:
           Fn::Sub: ${AWS::AccountId}-cfn-lambda
         S3Key: secretsProvisioner.zip
-        S3ObjectVersion: 0UzqQboj99q3l6UWoAG_a2erH0fma7fw
       Role:
         Fn::Sub: ${SecretsProvisionerRole.Arn}
   SecretsProvisionerLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: /aws/lambda/${AWS::StackName}-secretsProvisioner
@@ -644,12 +647,15 @@ Resources:
           Fn::Sub: ${AWS::AccountId}-cfn-lambda
         S3Key: ecsTasks.zip
         S3ObjectVersion:
-          Ref: EcsTaskRunnerVersion
+          Fn::If:
+            - EcsTaskRunnerLatestVersionCondition
+            - Ref: AWS::NoValue
+            - Ref: EcsTaskRunnerVersion
       Role:
         Fn::Sub: ${EcsTaskRunnerRole.Arn}
   EcsTaskRunnerLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: /aws/lambda/${AWS::StackName}-ecsTasks
@@ -754,7 +760,7 @@ Resources:
               awslogs-stream-prefix: docker
   MigrateLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: ${AWS::StackName}/ecs/Tasks/migrate
@@ -1181,7 +1187,7 @@ Resources:
     Type: AWS::ECS::Cluster
   DashboardServiceLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: ${AWS::StackName}/ecs/DashboardService/dashboard
@@ -1189,7 +1195,7 @@ Resources:
         Ref: LogRetention
   PortfolioServiceLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: ${AWS::StackName}/ecs/PortfolioService/portfolio
@@ -1197,7 +1203,7 @@ Resources:
         Ref: LogRetention
   AuditServiceLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: ${AWS::StackName}/ecs/AuditService/audit
@@ -1205,7 +1211,7 @@ Resources:
         Ref: LogRetention
   QuoteServiceLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName:
         Fn::Sub: ${AWS::StackName}/ecs/QuoteService/quote
@@ -1213,7 +1219,7 @@ Resources:
         Ref: LogRetention
   DmesgLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName: 
         Fn::Sub: ${AWS::StackName}/ec2/ApplicationAutoscaling/var/log/dmesg
@@ -1221,7 +1227,7 @@ Resources:
         Ref: LogRetention
   MessagesLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName: 
         Fn::Sub: ${AWS::StackName}/ec2/ApplicationAutoscaling/var/log/messages
@@ -1229,7 +1235,7 @@ Resources:
         Ref: LogRetention
   DockerLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName: 
         Fn::Sub: ${AWS::StackName}/ec2/ApplicationAutoscaling/var/log/docker
@@ -1237,7 +1243,7 @@ Resources:
         Ref: LogRetention
   EcsAgentLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName: 
         Fn::Sub: ${AWS::StackName}/ec2/ApplicationAutoscaling/var/log/ecs/ecs-agent
@@ -1245,7 +1251,7 @@ Resources:
         Ref: LogRetention
   EcsInitLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: {{ log_deletion_policy }}
+    DeletionPolicy: Delete
     Properties:
       LogGroupName: 
         Fn::Sub: ${AWS::StackName}/ec2/ApplicationAutoscaling/var/log/ecs/ecs-init
@@ -1315,7 +1321,7 @@ Resources:
             Fn::Sub: ${AWS::StackName}-DBParameterGroup
   ApplicationDatabase:
     Type: AWS::RDS::DBInstance
-    DeletionPolicy: {{ config_database_deletion_policy | default('Delete') }}
+    DeletionPolicy: Delete
     Properties:
       Engine: MySQL
       EngineVersion: 5.7
