@@ -3,6 +3,7 @@ Sts.Role: arn:aws:iam::543279062384:role/admin
 
 # Stack settings
 Stack.Name: microtrader-production
+Stack.Description: Microtrader Stack - production
 Stack.Role: arn:aws:iam::543279062384:role/cfn-admin
 Stack.Tags.org:tech:environment: production
 
