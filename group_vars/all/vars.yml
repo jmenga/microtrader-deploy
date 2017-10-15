@@ -1,5 +1,6 @@
 ---
-# Add global settings here
-
-# aws-cloudformation role settings
-cf_stack_name: "microtrader-{{ env }}"
+Stack.Tags: 
+  org:business:owner: Pluralsight
+  org:business:product: Microtrader
+  org:business:severity: High
+  org:tech:contact: justin.menga@gmail.com
