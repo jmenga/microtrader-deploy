@@ -38,3 +38,7 @@ delete/%:
 	${INFO} "Deleting environment $*..."
 	@ ansible-playbook site.yml -e env=$* -e 'Stack.Delete=true' $(FLAGS)
 	${INFO} "Delete complete"
+
+# Do not interpret arguments as targets
+%:
+	@:
