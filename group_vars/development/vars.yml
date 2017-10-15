@@ -4,8 +4,7 @@ Sts.Role: arn:aws:iam::543279062384:role/admin
 # Stack settings
 Stack.Name: microtrader-development
 Stack.Description: Microtrader Stack - Development
-Stack.Tags: 
-  org:tech:environment: development
+Stack.Tags.org:tech:environment: development
 
 # Microtrader settings
 Stack.Inputs.MicrotraderQuoteHttpPort: 8000
