@@ -1699,6 +1699,7 @@ Resources:
                 PROXY_URL:
                   Fn::ImportValue:
                     Fn::Sub: ${VpcName}ProxyUrl
+                DOCKER_NETWORK_MODE: host
     Properties:
       ImageId:
         Ref: ApplicationImageId
