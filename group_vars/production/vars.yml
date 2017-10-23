@@ -7,6 +7,10 @@ Stack.Description: Microtrader Stack - production
 Stack.Role: arn:aws:iam::543279062384:role/cfn-admin
 Stack.Tags.org:tech:environment: production
 
+# Global resource settings
+AWS::Logs::LogGroup:
+  DeletionPolicy: Retain
+
 # Microtrader settings
 Stack.Inputs.MicrotraderQuoteHttpPort: 8000
 Stack.Inputs.MicrotraderAuditHttpPort: 8001
@@ -16,6 +20,7 @@ Stack.Inputs.MicrotraderDashboardHttpPort: 8002
 Stack.Inputs.DatabaseName: audit
 Stack.Inputs.DatabaseUsername: audit
 Stack.Inputs.DatabasePassword: AQICAHj7MfbzqIkL206zxHO2BIK6vbdMxzXI2rdyeYLA/j3lIwHli2UsC3HNYrfQlmOr6RHTAAAAcTBvBgkqhkiG9w0BBwagYjBgAgEAMFsGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMi9kQsPPgQJpCcwS/AgEQgC5y94YbJTJxuKuHxjyQOjjCbJfgcQi1Mj2g/p8MbrZH74IdXkbcsEI6ccIby4uV
+Stack.Resources.ApplicationDatabase.DeletionPolicy: Snapshot
 
 # Application settings
 Stack.Inputs.ApplicationDnsName: prod-microtrader
